@@ -46,7 +46,6 @@ function App() {
 
             socket.on('new-data-change', ({ senderId, store }) => {
                 if (clientId.current !== senderId) {
-                    console.log('new-data-change was triggered => ', JSON.parse(store));
                     remote.current = true;
                     ganttInstance.store.data = JSON.parse(store);
                     remote.current = false;
