@@ -1,3 +1,4 @@
+import './GanttToolbar';
 /**
  * Application configuration
  */
@@ -15,8 +16,9 @@ const ganttConfig = {
                 url : 'data/gantt-data.json'
             }
         },
-        autoLoad  : true
-    }
+        autoLoad  : true,
+    },
+    tbar : { type: 'gantttoolbar' },
 };
 
 export { ganttConfig };

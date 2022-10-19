@@ -4,7 +4,7 @@
     "calendar": "general",
     "startDate": "2022-03-14",
     "hoursPerDay": 24,
-    "daysPerWeek": 5,
+    "daysPerWeek": 6,
     "daysPerMonth": 20
   },
   "calendars": {
