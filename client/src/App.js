@@ -8,23 +8,24 @@ import { v4 as uuid } from 'uuid';
 const socket = io('ws://localhost:5000', { transports: ['websocket'] });
 
 function App() {
-    const gantt = useRef(null);
-    const changeTimer = useRef();
-    const remote = useRef(false);
-    const clientId = useRef(uuid());
-    const changeTriggered = useRef(false);
-    const persistedStore = useRef();
+    const 
+        ganttRef = useRef(null),
+        changeTimer = useRef(),
+        remote = useRef(false),
+        clientId = useRef(uuid()),
+        changeTriggered = useRef(false),
+        persistedData = useRef();
 
     useEffect(() => {
-        const ganttInstance = gantt.current?.instance;
-        if (ganttInstance) {
-            const project = ganttInstance.project;
+        const gantt = ganttRef.current?.instance;
+        if (gantt) {
+            const project = gantt.project;
             project?.addListener('change', () => {
                 if (changeTimer.current) clearTimeout(changeTimer.current);
                 changeTimer.current = setTimeout(() => {
                     if (!remote.current) {
                         if (changeTriggered.current) {
-                            const store = gantt.current?.instance.store.json
+                            const store = gantt.store.toJSON();
                             socket.emit('data-change', { senderId: clientId.current, store });
                         } else {
                             changeTriggered.current = true;
@@ -33,21 +34,24 @@ function App() {
                 }, 800)
             });
             project?.addListener('load', () => {
-                if (persistedStore.current) {
+                if (persistedData.current) {
+                    const { store } = persistedData.current;
                     remote.current = true;
-                    ganttInstance.store.data = JSON.parse(persistedStore.current);
+                    if (store) {
+                        gantt.store.data = store
+                    }
                     remote.current = false;
                     socket.off('just-joined');
                 }
             });
-            socket.on('just-joined', ({ _, store }) => {
-                persistedStore.current = store
+            socket.on('just-joined', (data) => {
+                if (data) persistedData.current = data;
             });
 
             socket.on('new-data-change', ({ senderId, store }) => {
                 if (clientId.current !== senderId) {
                     remote.current = true;
-                    ganttInstance.store.data = JSON.parse(store);
+                    gantt.store.data = store;
                     remote.current = false;
                 }
             });
@@ -59,7 +63,7 @@ function App() {
 
     return (
         <BryntumGantt
-            ref = {gantt}
+            ref = {ganttRef}
             {...ganttConfig}
         />
     );

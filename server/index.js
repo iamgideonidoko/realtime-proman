@@ -1,23 +1,25 @@
-const http = require('http');
-const express = require('express');
-const cors = require('cors');
-const { Server } = require('socket.io');
-const app = express();
-const origin = 'http://localhost:3000';
+const 
+    http = require('http'),
+    express = require('express'),
+    cors = require('cors'),
+    { Server } = require('socket.io'),
+    app = express(),
+    origin = 'http://localhost:3000';
+
 app.use(cors({ origin, credentials: true }));
-const httpServer = http.createServer(app);
-const io = new Server(httpServer, {
-    cors: { origin }
-});
-let persistedStore = null;
+const 
+    httpServer = http.createServer(app),
+    io = new Server(httpServer, {
+        cors: { origin }
+    });
+// data will be persisted here
+let persistedData = null;
 io.on('connection', (socket) => {
-    console.log(`New client with ID: ${socket.id}`);
-    console.log('store => ', persistedStore);
-    if (persistedStore) socket.emit('just-joined', persistedStore);
-    socket.on('data-change', (msg) => {
-        persistedStore = msg;
-        socket.broadcast.emit('new-data-change', msg);
+    console.log(`New client ID: ${socket.id}`);
+    socket.emit('just-joined', persistedData ?? {});
+    socket.on('data-change', (data) => {
+        persistedData = data;
+        socket.broadcast.emit('new-data-change', data);
     })
-})
-const port = process.env.PORT || 5000;
-httpServer.listen({ port }, () => console.log(`🚀 server started on port: ${port}`) )
+});
+httpServer.listen({ port: 5000 }, () => console.log(`🚀 server started...`) )
