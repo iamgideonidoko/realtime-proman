@@ -13,8 +13,8 @@ function App() {
         changeTimer = useRef(),
         remote = useRef(false),
         clientId = useRef(uuid()),
-        changeTriggered = useRef(false),
-        persistedData = useRef();
+        persistedData = useRef(),
+        canSendData = useRef(false);
 
     useEffect(() => {
         const gantt = ganttRef.current?.instance;
@@ -24,14 +24,12 @@ function App() {
                 if (changeTimer.current) clearTimeout(changeTimer.current);
                 changeTimer.current = setTimeout(() => {
                     if (!remote.current) {
-                        if (changeTriggered.current) {
+                        if (canSendData.current) {
                             const store = gantt.store.toJSON();
                             socket.emit('data-change', { senderId: clientId.current, store });
-                        } else {
-                            changeTriggered.current = true;
                         }
                     }
-                }, 800)
+                }, 100)
             });
             project?.addListener('load', () => {
                 if (persistedData.current) {
@@ -41,6 +39,7 @@ function App() {
                         gantt.store.data = store
                     }
                     remote.current = false;
+                    setTimeout(() => canSendData.current = true, 2000);
                     socket.off('just-joined');
                 }
             });
@@ -51,7 +50,9 @@ function App() {
             socket.on('new-data-change', ({ senderId, store }) => {
                 if (clientId.current !== senderId) {
                     remote.current = true;
-                    gantt.store.data = store;
+                    if (JSON.stringify(gantt.store.toJSON()) !== JSON.stringify(store)) {
+                        gantt.store.data = store;
+                    }
                     remote.current = false;
                 }
             });
