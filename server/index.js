@@ -1,8 +1,7 @@
 const 
     { Server } = require('socket.io'),
-    origin = 'http://localhost:3000',
     io = new Server({
-        cors: { origin }
+        cors: { origin: '*' }
     });
 // data will be persisted here
 let persistedData = null;
