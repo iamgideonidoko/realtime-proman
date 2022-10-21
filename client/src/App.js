@@ -10,7 +10,6 @@ const socket = io('ws://localhost:5000', { transports: ['websocket'] });
 function App() {
     const 
         ganttRef = useRef(null),
-        changeTimer = useRef(),
         remote = useRef(false),
         clientId = useRef(uuid()),
         persistedData = useRef(),
@@ -21,15 +20,12 @@ function App() {
         if (gantt) {
             const project = gantt.project;
             project?.addListener('change', () => {
-                if (changeTimer.current) clearTimeout(changeTimer.current);
-                changeTimer.current = setTimeout(() => {
-                    if (!remote.current) {
-                        if (canSendData.current) {
-                            const store = gantt.store.toJSON();
-                            socket.emit('data-change', { senderId: clientId.current, store });
-                        }
+                if (!remote.current) {
+                    if (canSendData.current) {
+                        const store = gantt.store.toJSON();
+                        socket.emit('data-change', { senderId: clientId.current, store });
                     }
-                }, 100)
+                }
             });
             project?.addListener('load', () => {
                 if (persistedData.current) {
